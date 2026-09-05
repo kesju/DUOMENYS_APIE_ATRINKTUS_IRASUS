@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+"""Export recording IDs for the specified 2023 patient cohort."""
+
+from pathlib import Path
+
+import pandas as pd
+
+
+SOURCE = Path(
+    "/Users/kesju/DI/DUOMENYS/DUOMENYS_ANOTUOTI/AtsisiuntimasZiveDuomenu/"
+    "Atsisiusti_visi_anotuoti_duomenys_26_06_08/"
+    "visi_zive_irasai_annot-Darb_26_06_08_atrankai.xlsx"
+)
+OUTPUT = Path(
+    "/Users/kesju/DI/CODEX_PROJECTS/DUOMENYS_APIE_ATRINKTUS_IRASUS/"
+    "visu_irasu_recordingId_sarasas_2023.txt"
+)
+
+USER_IDS = """
+6034c808d6c2740008035ede
+60a917b354352a3df86dc1f2
+613b1bc63d08d41309cdc8f1
+613b1c013d08d44862cdc8f2
+613b1c6f3d08d4370acdc8f3
+613b1c9c3d08d43181cdc8f4
+613b1cc33d08d4c0d5cdc8f5
+613b1d0c3d08d413ffcdc8f6
+613b1d673d08d4d1f3cdc8f8
+613b1d903d08d4df57cdc8f9
+613b1db23d08d4ea68cdc8fa
+6143507abd0cc5051b275171
+6144c4fbbd0cc552e427535f
+6144c588bd0cc52ba0275362
+6144c5b1bd0cc5a681275363
+6144c5e5bd0cc503ed275364
+6144c658bd0cc5a1c0275367
+6144c682bd0cc5acb7275368
+614dbf7e4bac1c78af017aed
+614dbfa84bac1c1231017aee
+614dbfd24bac1cce7b017aef
+615708ba2312e518c0168e69
+615708ea2312e56066168e6a
+6157091f2312e5b88c168e6b
+615709472312e5fe91168e6c
+61632b201e32557db9017bbc
+61632b451e325518bb017bbd
+61632bd41e32554ace017bc0
+616b00841160152288c2816b
+616b00a811601579e9c2816c
+617508dc6d4fb40e08637740
+6175090b6d4fb4db99637741
+617509386d4fb44996637742
+617509a66d4fb46d3b637744
+61fe6753cd448a4569134712
+622dfe483c70e6abd58a21ab
+655341fe7f978676df92e657
+607efbd094e6ea3b5a1ab959
+60e1d80f93b55b41529e9eaa
+614dbeaf4bac1cd48d017ae8
+614dbef54bac1c62ae017aea
+61632ace1e32557a62017bba
+61632afa1e325516b4017bbb
+61632ba41e3255865f017bbf
+617509686d4fb48519637743
+617eea296878b60aff6b47b3
+61b320c5cf0f342a0acb1c95
+61cabfa9ec27507e7e60a4fe
+617509cd6d4fb47516637745
+61a886195cd5477be0a4e96f
+622dfee93c70e6c8798a21af
+614dbf504bac1c5155017aec
+6144c532bd0cc54c83275360
+617ee9a06878b643ef6b47b0
+617ee9d16878b6710c6b47b1
+617eea056878b660e46b47b2
+617eea5a6878b6614c6b47b4
+6187849f6878b65bc36b589b
+6190d3f63cd1d2c475303ce6
+6190d4353cd1d2d85e303ce7
+6190d45b3cd1d2e695303ce8
+6190d4b23cd1d29db2303ce9
+6190d4e63cd1d227c1303cea
+6190d53e3cd1d2ea3f303cec
+619b4b92b4813271534e3da8
+619b4bbbb481320f924e3da9
+619b4beab481327f494e3daa
+619b4c0fb48132b9ef4e3dab
+619b4c3eb48132c6194e3dac
+619b4c63b4813294ad4e3dad
+61a885c55cd54749a3a4e96d
+61a885ec5cd54753a6a4e96e
+61a8863e5cd547e980a4e970
+61a886b3e8f90001e9c6e12b
+61b31ff1cf0f34275ccb1c90
+61b32023cf0f347968cb1c91
+61b3207dcf0f344005cb1c93
+61b320a0cf0f344d5acb1c94
+61b320e9cf0f344a0fcb1c96
+61cabf69ec2750492360a4fd
+61cac03bec2750e94860a501
+61d9ab03f55231142d8e85e0
+61d9ab50f552314db38e85e2
+61f16726632a3374780c7a20
+61f1676d632a33abc40c7a21
+61f167fa632a338a460c7a23
+61fe667ccd448a855313470d
+61fe66b5cd448a02d913470e
+61fe66d9cd448a817c13470f
+61fe66ffcd448a4cef134710
+61fe672bcd448a93d1134711
+61fe6780cd448a3658134713
+6211fd9ccd448a0d29136f69
+6211fdc4cd448ab605136f6a
+6211fdf1cd448a5fc0136f6b
+6211fe30cd448a579f136f6c
+6211fe54cd448a53aa136f6d
+622dfd653c70e643d88a21a6
+622dfd8d3c70e6398c8a21a7
+622dfdc63c70e625b98a21a8
+622dfe223c70e6ae2d8a21aa
+622dfe9c3c70e62f858a21ad
+622dfec33c70e601cf8a21ae
+622dff593c70e629688a21b2
+""".split()
+
+
+def main() -> None:
+    records = pd.read_excel(
+        SOURCE,
+        sheet_name="Records",
+        usecols=["userId", "recordingId"],
+        dtype={"userId": "string", "recordingId": "string"},
+    )
+    records = records.dropna(subset=["userId", "recordingId"])
+    records["userId"] = records["userId"].str.strip()
+    records["recordingId"] = records["recordingId"].str.strip()
+
+    lines = []
+    missing = []
+    total_recordings = 0
+    for user_id in USER_IDS:
+        recording_ids = (
+            records.loc[records["userId"] == user_id, "recordingId"]
+            .drop_duplicates()
+            .tolist()
+        )
+        if not recording_ids:
+            missing.append(user_id)
+        total_recordings += len(recording_ids)
+        lines.append(f"{user_id}: {', '.join(recording_ids)}")
+
+    OUTPUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"patients={len(USER_IDS)}")
+    print(f"recordings={total_recordings}")
+    print(f"patients_without_recordings={len(missing)}")
+    if missing:
+        print("missing_user_ids=" + ",".join(missing))
+
+
+if __name__ == "__main__":
+    main()
